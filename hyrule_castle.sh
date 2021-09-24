@@ -14,8 +14,8 @@ floor=1
 
 rarete=$(( $RANDOM % 101 ))
 csv=$1
-
-
+declare -a choix
+arr=0
 
 
 
@@ -79,24 +79,27 @@ function aleatoire(){ #accéder au fichier csv pour faire l'aleatoire
     do
 	if [[ ($rarete -ge 0) && ($rarete -le 50) ]];then #pour une rareté de 1
 	    if [[ $rarity == 1 ]];then
+		choix=$choix$name
 		echo $name $rarity
 	    fi
 	elif [[ ($rarete -gt 50) && ($rarete -le 80) ]];then #pour une de 2 ...
 	    if [[ $rarity == 2 ]];then
+		choix=$choix" "$name
 	        echo $name $rarity
 	    fi
 	elif [[ ($rarete -gt 80) && ($rarete -le 95) ]];then
 	    if [[ $rarity == 3 ]];then
+		choix+=$choix" "$name
  	        echo $name $rarity==3
 	    fi
-	    
 	elif [[ ($rarete -gt 95) && ($rarete -le 99) ]];then
 	    if [[ $rarity == 4 ]];then
+		choix=$choix" "$name
 		echo $name $rarity==4
 	    fi
-	    
 	elif [[ ($rarete -gt 99) && ($rarete -le 100) ]];then
 	    if [[ $rarity == 5 ]];then
+		choix=$choix" "$name
 		echo $name $rarity==5
 	    fi
 	    
@@ -105,8 +108,7 @@ function aleatoire(){ #accéder au fichier csv pour faire l'aleatoire
 }
 
 aleatoire enemies.csv
-
-
+echo $choix
 
 
 
