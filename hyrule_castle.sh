@@ -134,7 +134,7 @@ function aleatoire(){ #accéder au fichier csv pour faire liste
 	    fi
 	fi
     done < $1 
-    result=${choix[$(($RANDOM % $((${#choix[@]}+1))))]}
+    result=${choix[$(($RANDOM % ${#choix[@]}))]}
     echo $result
     if [[ $1 == players.csv ]];then #changement de stats pour...
 	player
