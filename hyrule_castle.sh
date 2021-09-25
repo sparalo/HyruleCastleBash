@@ -1,36 +1,49 @@
 #!/bin/bash
-function player(){ #accéder au fichier csv pour faire l'aleatoire                                                         
+function player(){ #accéder au fichier csv pour faire l'aleatoire                                                        
     while IFS="," read -r id name hp mp str int def res spd luck race class rarity
     do
-	player=$name  #stats du joueur
-	hp_pm=$hp
-	hp_p=$hp
-	str_p=$str
-    done < $1
+	if [[ $result == $name ]];then
+	    player=$name  #stats du joueur
+	    hp_pm=$hp
+	    hp_p=$hp
+	    str_p=$str
+	fi
+    done < players.csv
 }
 function ennemi(){ #accéder au fichier csv pour faire l'aleatoire                                                           
     while IFS="," read -r id name hp mp str int def res spd luck race class rarity
     do
-	ennemi=$name #stats du monstre
-	hp_em=$hp
-	hp_e=$hp
-	str_e=$str
-    done < $1
+	if [[ $result == $name ]];then
+	    ennemi=$name #stats du monstre
+	    hp_em=$hp
+	    hp_e=$hp
+	    str_e=$str
+	fi
+    done < enemies.csv
 }
 function boss(){ #accéder au fichier csv pour faire l'aleatoire                                                           
     while IFS="," read -r id name hp mp str int def res spd luck race class rarity
     do
-	boss=$name #stats du boss
-	hp_b=$hp
-	str_b=$str
-    done < $1
+	if [[ $result == $name ]];then
+	    ennemi=$name #stats du monstre                                                                            
+            hp_em=$hp
+            hp_e=$hp
+            str_e=$str
+	fi
+    done < bosses.csv
 }
+hp_p=60
+hp_pm=60
+str_p=15
+
+hp_e=30
+hp_em=30
+str_e=5
 
 floor=1
 
 rarete=$(( $RANDOM % 101 ))
 csv=$1
-declare -a choix
 result=0
 
 
@@ -94,7 +107,8 @@ function combat() {
 	
 }
 
-function aleatoire(){ #accéder au fichier csv pour faire liste 
+function aleatoire(){ #accéder au fichier csv pour faire liste
+    declare -a choix
     while IFS="," read -r id name hp mp str int def res spd luck race class rarity
     do
 	if [[ ($rarete -ge 0) && ($rarete -le 50) ]];then #pour une rareté de 1
@@ -119,31 +133,15 @@ function aleatoire(){ #accéder au fichier csv pour faire liste
 		choix=( "${choix[@]}" $name )
 	    fi
 	fi
-    done < $1
-    echo toto
-    echo ${choix[@]} 
-    result=${choix[$(($RANDOM % ${#choix[@]}))]}
+    done < $1 
+    result=${choix[$(($RANDOM % $((${#choix[@]}+1))))]}
+    echo $result
     if [[ $1 == players.csv ]];then #changement de stats pour...
-	if [[ $result -eq $name ]];then #hero aleatoire
-	    player=$name
-	    hp_pm=$hp
-	    hp_p=$hp
-	    str_p=$str
-	fi
+	player
     elif [[ $1 == enemies.csv ]];then #ennemi aleatoire
-	if [[ $result -eq $name ]];then
-	    ennemi=$name
-	    hp_em=$hp
-	    hp_e=$hp
-	    str_e=$str
-	fi
+	ennemi
     elif [[ $1 == bosses.csv ]];then #boss aleatoire
-	if [[ $result -eq $name ]];then
-	    ennemi=$name
-            hp_em=$hp
-            hp_e=$hp
-            str_e=$str
-	fi
+	boss
     fi
 }
 
