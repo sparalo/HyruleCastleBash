@@ -120,6 +120,8 @@ function aleatoire(){ #accéder au fichier csv pour faire liste
 	    fi
 	fi
     done < $1
+    echo toto
+    echo ${choix[@]} 
     result=${choix[$(($RANDOM % ${#choix[@]}))]}
     if [[ $1 == players.csv ]];then #changement de stats pour...
 	if [[ $result -eq $name ]];then #hero aleatoire
