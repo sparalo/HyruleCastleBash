@@ -1,21 +1,39 @@
 #!/bin/bash
+function player(){ #accéder au fichier csv pour faire l'aleatoire                                                         
+    while IFS="," read -r id name hp mp str int def res spd luck race class rarity
+    do
+	player=$name  #stats du joueur
+	hp_pm=$hp
+	hp_p=$hp
+	str_p=$str
+    done < $1
+}
 
-player="Link" #stats du joueur
-hp_pm=60
-hp_p=60
-str_p=15
+function ennemi(){ #accéder au fichier csv pour faire l'aleatoire                                                           
+    while IFS="," read -r id name hp mp str int def res spd luck race class rarity
+    do
+	ennemi=$name #stats du monstre
+	hp_em=$hp
+	hp_e=$hp
+	str_e=$str
+    done < $1
+}
 
-ennemi="Bokoblin" #stats du monstre
-hp_em=30
-hp_e=30
-str_e=5
+function boss(){ #accéder au fichier csv pour faire l'aleatoire                                                           
+    while IFS="," read -r id name hp mp str int def res spd luck race class rarity
+    do
+	boss=$name #stats du boss
+	hp_b=$hp
+	str_b=$str
+    done < $1
+}
 
 floor=1
 
 rarete=$(( $RANDOM % 101 ))
 csv=$1
 declare -a choix
-arr=0
+result=0
 
 
 
@@ -53,10 +71,14 @@ function combat() {
 		if [[ $hp_p -gt $hp_pm ]];then # ligne de sureté eviter triche 
 		    hp_p=$hp_pm #pv ramené au max
 		    echo "tu t'es soigné"
+		    echo $ennemi a attaqué et fait $str_e de dégats
+		    hp_p=$(($hp_p - $str_e))
 		    echo""
 		    ecran
 		else
 		    echo "tu t'es soigné"
+		    echo $ennemi a attaqué et fait $str_e de dégats
+                    hp_p=$(($hp_p - $str_e))
 		    echo""
 		    ecran
 		fi
@@ -79,54 +101,60 @@ function aleatoire(){ #accéder au fichier csv pour faire l'aleatoire
     do
 	if [[ ($rarete -ge 0) && ($rarete -le 50) ]];then #pour une rareté de 1
 	    if [[ $rarity == 1 ]];then
-		choix=$choix$name
-		echo $name $rarity
+		choix=( "${choix[@]}" $name )
+		
 	    fi
 	elif [[ ($rarete -gt 50) && ($rarete -le 80) ]];then #pour une de 2 ...
 	    if [[ $rarity == 2 ]];then
-		choix=$choix" "$name
-	        echo $name $rarity
+		choix=( "${choix[@]}" $name )
 	    fi
 	elif [[ ($rarete -gt 80) && ($rarete -le 95) ]];then
 	    if [[ $rarity == 3 ]];then
-		choix+=$choix" "$name
- 	        echo $name $rarity==3
+		choix=( "${choix[@]}" $name )
 	    fi
 	elif [[ ($rarete -gt 95) && ($rarete -le 99) ]];then
 	    if [[ $rarity == 4 ]];then
-		choix=$choix" "$name
-		echo $name $rarity==4
+		choix=( "${choix[@]}" $name )
 	    fi
 	elif [[ ($rarete -gt 99) && ($rarete -le 100) ]];then
 	    if [[ $rarity == 5 ]];then
-		choix=$choix" "$name
-		echo $name $rarity==5
+		choix=( "${choix[@]}" $name )
 	    fi
-	    
 	fi
     done < $1
+    result=${choix[$(($RANDOM % ${#choix[@]}))]}
+    if [[ $1 == players.csv ]];then
+	if [[ $result == $name ]];then
+	    player
+	fi
+    elif [[ $1 == enemies.csv ]];then
+	if [[ $result == $name ]];then
+	    ennemi
+	fi
+    elif [[ $1 == bosses.csv ]];then
+	if [[ $result == $name ]];then
+	    boss
+	fi
+    fi
 }
-
-aleatoire enemies.csv
-echo $choix
 
 
 
 while [[ $floor -le 10 ]] #le jeu durera jusqu'a l'etage 10 atteint
 do
     if [[ $floor -lt 10 ]];then #les 9 étages avant le boss 
-	combat #la fonction combat est appellé
-	hp_e=$hp_em #soigné la variable vie du monstre pour ne pas sauter des etages
-	floor=$(($floor + 1))#augmenter d'etages
-    elif [[ $floor -eq 10 ]];then #le combat contre le boss
+	combat 
+	hp_e=$hp_em 
+	floor=$(($floor + 1)) 
+    elif [[ $floor -eq 10 ]];then 
 	ennemi="Ganon"
-	hp_e=150 #changer la vie pour celle du boss
-	str_e=20 #changer la force ...
+	hp_e=150 
+	str_e=20
 	combat
-	floor=$(($floor + 1))#monté d'un étage pour finir le jeu
+	floor=$(($floor + 1))
     fi
 done
-if [[ $hp_e -le 0]];then #message de victoire
+if [[ $hp_e -le 0 ]];then #message de victoire
     echo "Princesse Zelda: Bien joué link! Tu as sauvé Hyrule! Tu es notre heros!"
 elif [[ $hp_p -le 0 ]];then #message de defaite face a ganon
     echo "Princesse Zelda: Tu n'as pas reussi à temps Link... notre monde est perdue..."
