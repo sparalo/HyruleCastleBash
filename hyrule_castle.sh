@@ -8,7 +8,6 @@ function player(){ #accéder au fichier csv pour faire l'aleatoire
 	str_p=$str
     done < $1
 }
-
 function ennemi(){ #accéder au fichier csv pour faire l'aleatoire                                                           
     while IFS="," read -r id name hp mp str int def res spd luck race class rarity
     do
@@ -18,7 +17,6 @@ function ennemi(){ #accéder au fichier csv pour faire l'aleatoire
 	str_e=$str
     done < $1
 }
-
 function boss(){ #accéder au fichier csv pour faire l'aleatoire                                                           
     while IFS="," read -r id name hp mp str int def res spd luck race class rarity
     do
@@ -65,7 +63,7 @@ function combat() {
 	    
 	elif [[ $action == "heal" ]];then
 	    if [[ $hp_p -eq $hp_pm ]];then #si pv = pv max
-		echo "Navi: Link tu n'en as pas besoin!"
+		echo "Navi: " $name  " tu n'en as pas besoin!"
 	    else
 		hp_p=$(($hp_p+$hp_pm/2)) #soin de moitié des pv max
 		if [[ $hp_p -gt $hp_pm ]];then # ligne de sureté eviter triche 
@@ -86,7 +84,7 @@ function combat() {
 	fi
     done
     if [[ $hp_p -le 0 ]];then #phrase de fin de combat
-	echo "Navi: Link! Réveille toi tu ne peux pas echouer maintenant!"
+	echo "Navi: "$player " Réveille toi tu ne peux pas echouer maintenant!"
     else
 	echo $ennemi a été pourfendu
 	echo""
@@ -96,7 +94,7 @@ function combat() {
 	
 }
 
-function aleatoire(){ #accéder au fichier csv pour faire l'aleatoire
+function aleatoire(){ #accéder au fichier csv pour faire liste 
     while IFS="," read -r id name hp mp str int def res spd luck race class rarity
     do
 	if [[ ($rarete -ge 0) && ($rarete -le 50) ]];then #pour une rareté de 1
@@ -123,40 +121,48 @@ function aleatoire(){ #accéder au fichier csv pour faire l'aleatoire
 	fi
     done < $1
     result=${choix[$(($RANDOM % ${#choix[@]}))]}
-    if [[ $1 == players.csv ]];then
-	if [[ $result == $name ]];then
-	    player
+    if [[ $1 == players.csv ]];then #changement de stats pour...
+	if [[ $result -eq $name ]];then #hero aleatoire
+	    player=$name
+	    hp_pm=$hp
+	    hp_p=$hp
+	    str_p=$str
 	fi
-    elif [[ $1 == enemies.csv ]];then
-	if [[ $result == $name ]];then
-	    ennemi
+    elif [[ $1 == enemies.csv ]];then #ennemi aleatoire
+	if [[ $result -eq $name ]];then
+	    ennemi=$name
+	    hp_em=$hp
+	    hp_e=$hp
+	    str_e=$str
 	fi
-    elif [[ $1 == bosses.csv ]];then
-	if [[ $result == $name ]];then
-	    boss
+    elif [[ $1 == bosses.csv ]];then #boss aleatoire
+	if [[ $result -eq $name ]];then
+	    ennemi=$name
+            hp_em=$hp
+            hp_e=$hp
+            str_e=$str
 	fi
     fi
 }
 
 
-
+aleatoire players.csv
 while [[ $floor -le 10 ]] #le jeu durera jusqu'a l'etage 10 atteint
 do
-    if [[ $floor -lt 10 ]];then #les 9 étages avant le boss 
+    if [[ $floor -lt 10 ]];then #les 9 étages avant le boss
+	aleatoire enemies.csv
 	combat 
 	hp_e=$hp_em 
 	floor=$(($floor + 1)) 
-    elif [[ $floor -eq 10 ]];then 
-	ennemi="Ganon"
-	hp_e=150 
-	str_e=20
+    elif [[ $floor -eq 10 ]];then
+        aleatoire bosses.csv
 	combat
 	floor=$(($floor + 1))
     fi
 done
 if [[ $hp_e -le 0 ]];then #message de victoire
-    echo "Princesse Zelda: Bien joué link! Tu as sauvé Hyrule! Tu es notre heros!"
+    echo "Princesse Zelda: Bien joué " $player " Tu as sauvé Hyrule! Tu es notre heros!"
 elif [[ $hp_p -le 0 ]];then #message de defaite face a ganon
-    echo "Princesse Zelda: Tu n'as pas reussi à temps Link... notre monde est perdue..."
+    echo "Princesse Zelda: Tu n'as pas reussi à temps "$player " notre monde est perdue..."
     echo "Vous voyez Ganon s'emparer de la tri force et rire face a sa victoire pendant que vous perdez concience"
 fi
